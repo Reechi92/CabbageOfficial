@@ -1385,7 +1385,7 @@ function sendDeviceInfo(deviceInfo) {
     .catch((error) => console.error('Error:', error));
 }
 
-window.onload = getUserDeviceInfo;
+window.onload = getUserDeviceInfo; */
 
 
 
@@ -1404,7 +1404,7 @@ window.onload = function() {
         welcomeScreen.classList.remove('show');
         localStorage.setItem('welcomeShown', 'true'); // Запоминаем, что приветствие уже показывалось
     };
-}; */
+}; 
 document.querySelectorAll('.moving-cabbage').forEach(cabbage => {
     // Генерация случайного смещения и угла вращения в правый нижний угол
     const randomX = Math.random() * 150 + 50; // диапазон от 50 до 200vw
