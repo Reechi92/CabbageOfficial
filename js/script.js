@@ -1420,4 +1420,4 @@ document.querySelectorAll('.moving-cabbage').forEach(cabbage => {
 });
 
 
-localStorage.clear();
+//localStorage.clear();
