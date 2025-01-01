@@ -1665,11 +1665,12 @@ function renderTasks() {
                     <div class="wrapper-gift">
                         <p>Награда</p>
                         <div class="gift-item">
-                            <p class="result-gift">${task.reward}</p>
+                            <p class="result-gift">${formatNumber(task.reward)}</p>
                             <img class="dollar-limit" src="icons/dollar-icon1.png" alt="dollar-icon">
                         </div>
                     </div>
                 </div>
+                
             </div>
         `;
         tasksWrapper.innerHTML += taskHTML;
@@ -1699,11 +1700,11 @@ function updateTasksProgress() {
     renderTasks(); // Обновляем интерфейс
 }
 
-
+const resultGift = document.querySelector('.result-gift');
 
 function giveReward(index) {
     const rewardedTasks = JSON.parse(localStorage.getItem("rewardedTasks")) || [];
-
+    
     // Проверяем, если награда уже выдана
     if (rewardedTasks.includes(index)) return;
 
@@ -1802,14 +1803,14 @@ function spendCoins(amount) {
     renderTasks();
 }
 
-const resultGift = document.querySelector('.result-gift');
+
 //const missionTarget = document.querySelector('.text-aim');
 
 //${task.reward} ${task.target}
 
 //priceText.innerHTML = `${formatNumber(buttonCost)}`;
 
-resultGift.innerHTML = `${formatNumber(task.reward)}`;
+//resultGift.innerHTML = `${formatNumber(task.reward)}`;
 
 
 // Инициализация
