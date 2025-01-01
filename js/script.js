@@ -13,6 +13,9 @@ const boostTitleCounter = document.querySelector('.boost-titleCounter');
 const btnShop = document.querySelector('.btn-shop');
 const rightPanel = document.querySelector('.right-panel');
 
+let totalClicks = parseInt(localStorage.getItem('totalClicks')) || 0; // Общее количество кликов
+let spentCoins = 0; // Потраченные монеты
+
 
 
 // boost modal btn
@@ -97,6 +100,8 @@ counterBtn.addEventListener('click', function () {
         energy -= energyPerClick; // Уменьшаем энергию
         energyUnit.textContent = energy; // Обновляем отображение энергии
 
+
+
         progressWidth += progressIncrement;
         progressBarInner.style.width = `${progressWidth}px`;
         levelCounter.innerHTML = `Уровень: ${level}`;
@@ -107,6 +112,15 @@ counterBtn.addEventListener('click', function () {
         setTimeout(() => {
             counterBtn.style.transform = 'scale(1)';
         }, 100);
+
+        
+
+        // Увеличиваем количество кликов
+        clicks++; // Добавляем 1 к кликам
+        totalClicks = clicks; // Обновляем общий счетчик кликов
+
+        // Проверяем выполнение заданий
+        updateTasksProgress();
 
         if (progressWidth >= maxProgressWidth) {
             progressWidth = 0;
@@ -121,6 +135,8 @@ counterBtn.addEventListener('click', function () {
             localStorage.setItem('progressWidth', progressWidth);
         }
 
+        
+        localStorage.setItem('totalClicks', totalClicks);
         localStorage.setItem('energy', energy);
     } else {
         alert('Недостаточно энергии для клика!');
@@ -161,15 +177,29 @@ upgradeBtn.addEventListener('click', function() {
         priceText.innerHTML = `${formatNumber(buttonCost)}`;
         progressValue.innerHTML = `+${progressIncrement}`;
 
+        // Обновляем прогресс заданий вручную
+        currentTasks.forEach((task, index) => {
+            if (task.description.includes("Потрать")) {
+                progressData[index] += buttonCost;
+                if (progressData[index] >= task.target) {
+                    giveReward(index);
+                }
+            }
+        });
+
         // Сохраняем данные в localStorage
         localStorage.setItem('progressIncrement', progressIncrement);
         localStorage.setItem('clickPower', clickPower);
         localStorage.setItem('upLvlBtn', upLvlBtn);
         localStorage.setItem('buttonCost', buttonCost);
+        localStorage.setItem('progressData', JSON.stringify(progressData));
+        renderTasks();
     } else {
         alert('Недостаточно монет для улучшения!');
     }
 });
+
+
 
 upgradeLvl.innerHTML = `${upLvlBtn} ур`;
 earnTapInt.innerHTML = `${clickPower}`;
@@ -213,6 +243,16 @@ BtnRevenue.addEventListener('click', function() {
 
         // Новая формула для увеличения цены
         priceEarnHour = Math.floor(200 * Math.pow(1.80, lvlBtnRevenue));
+
+        // Обновляем прогресс заданий вручную
+        currentTasks.forEach((task, index) => {
+            if (task.description.includes("Потрать")) {
+                progressData[index] += priceEarnHour;
+                if (progressData[index] >= task.target) {
+                    giveReward(index);
+                }
+            }
+        });
         
         // Плавное увеличение прибыли в час (на 20%)
         getCoinsHour = getCoinsHour === 0 ? 500 : Math.floor(getCoinsHour * 1.2);
@@ -231,9 +271,11 @@ BtnRevenue.addEventListener('click', function() {
         localStorage.setItem('getCoinsHour', getCoinsHour);
         localStorage.setItem('counter', counter);
         localStorage.setItem('numberHourValue', numberHourValue);
+        localStorage.setItem('progressData', JSON.stringify(progressData));
 
         // Обновляем интерфейс
         updateDisplay();
+        renderTasks();
     } else {
         alert('Недостаточно средств для повышения уровня!');
     }
@@ -327,6 +369,7 @@ changeNumberElement.textContent = formatNumber(ranks[currentRankIndex + 1].thres
 
 const openShoprp = document.querySelector('.open-rp');
 console.log(openShoprp);
+
 btnShop.addEventListener('click', function() {
     rightPanel.classList.toggle('open-rp');
     rightPanel.style.transition = 'all 0.3s ease';
@@ -421,6 +464,18 @@ document.querySelector('.energylimit-btn').addEventListener('click', function() 
   if (counter >= limitPrice) {
 
     counter -= limitPrice;
+
+    currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            progressData[index] += limitPrice;
+            if (progressData[index] >= task.target) {
+                giveReward(index);
+            }
+        }
+    });
+
+
+
     // Увеличиваем лимит энергии в 2 раза
     maxEnergy *= 2;
     
@@ -432,6 +487,8 @@ document.querySelector('.energylimit-btn').addEventListener('click', function() 
     
 
     // Обновляем интерфейс
+    localStorage.setItem('progressData', JSON.stringify(progressData));
+    renderTasks();
     updateUI();
   } else {
     alert('Недостаточно средств на балансе!');
@@ -489,6 +546,15 @@ shopCardElement.addEventListener('click', function() {
 
         counter -= cardPrice;
 
+        currentTasks.forEach((task, index) => {
+            if (task.description.includes("Потрать")) {
+                progressData[index] += cardPrice;
+                if (progressData[index] >= task.target) {
+                    giveReward(index);
+                }
+            }
+        });
+
       // Добавляем значение из name-hour в e-hour
       infoEarnHour = currentEHour + nameHourValue;
   
@@ -501,6 +567,8 @@ shopCardElement.addEventListener('click', function() {
       
       
       // Обновляем интерфейс
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+      renderTasks();
       updateUiBtnOne();
     } else {
       alert('Недостаточно средств на балансе!');
@@ -557,6 +625,15 @@ CardTwoElement.addEventListener('click', function() {
 
       counter -= cardTwoPrice;
 
+      currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            progressData[index] += cardTwoPrice;
+            if (progressData[index] >= task.target) {
+                giveReward(index);
+            }
+        }
+      });
+
       infoEarnHour = currentEHour + HourTwoValue;
   
       // Удваиваем цену и уровень и nameHourValue
@@ -568,6 +645,8 @@ CardTwoElement.addEventListener('click', function() {
       
       
       // Обновляем интерфейс
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+      renderTasks();
       updateUiBtnTwo();
     } else {
       alert('Недостаточно средств на балансе!');
@@ -623,6 +702,15 @@ CardThreeElement.addEventListener('click', function() {
 
       counter -= cardThreePrice;
 
+      currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            progressData[index] += cardThreePrice;
+            if (progressData[index] >= task.target) {
+                giveReward(index);
+            }
+        }
+      });
+
       infoEarnHour = currentEHour + HourThreeValue;
   
       // Удваиваем цену и уровень и nameHourValue
@@ -634,6 +722,9 @@ CardThreeElement.addEventListener('click', function() {
       
       
       // Обновляем интерфейс
+      
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+      renderTasks();
       updateUiBtnThree();
     } else {
       alert('Недостаточно средств на балансе!');
@@ -689,6 +780,15 @@ CardFourElement.addEventListener('click', function() {
 
       counter -= cardFourPrice;
 
+      currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            progressData[index] += cardFourPrice;
+            if (progressData[index] >= task.target) {
+                giveReward(index);
+            }
+        }
+      });
+
       infoEarnHour = currentEHour + HourFourValue;
   
       // Удваиваем цену и уровень и nameHourValue
@@ -700,6 +800,8 @@ CardFourElement.addEventListener('click', function() {
       
       
       // Обновляем интерфейс
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+      renderTasks();
       updateUiBtnFour();
     } else {
       alert('Недостаточно средств на балансе!');
@@ -755,6 +857,15 @@ CardFiveElement.addEventListener('click', function() {
 
       counter -= cardFivePrice;
 
+      currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            progressData[index] += cardFivePrice;
+            if (progressData[index] >= task.target) {
+                giveReward(index);
+            }
+        }
+      });
+
       infoEarnHour = currentEHour + HourFiveValue;
   
       // Удваиваем цену и уровень и nameHourValue
@@ -766,6 +877,8 @@ CardFiveElement.addEventListener('click', function() {
       
       
       // Обновляем интерфейс
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+      renderTasks();
       updateUiBtnFive();
     } else {
       alert('Недостаточно средств на балансе!');
@@ -820,6 +933,15 @@ CardSixElement.addEventListener('click', function() {
 
       counter -= cardSixPrice;
 
+      currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            progressData[index] += cardSixPrice;
+            if (progressData[index] >= task.target) {
+                giveReward(index);
+            }
+        }
+    });
+
       infoEarnHour = currentEHour + HourSixValue;
   
       // Удваиваем цену и уровень и nameHourValue
@@ -831,6 +953,8 @@ CardSixElement.addEventListener('click', function() {
       
       
       // Обновляем интерфейс
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+      renderTasks();
       updateUiBtnSix();
     } else {
       alert('Недостаточно средств на балансе!');
@@ -886,6 +1010,15 @@ CardSevenElement.addEventListener('click', function() {
 
       counter -= cardSevenPrice;
 
+      currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            progressData[index] += cardSevenPrice;
+            if (progressData[index] >= task.target) {
+                giveReward(index);
+            }
+        }
+      });
+
       infoEarnHour = currentEHour + HourSevenValue;
   
       // Удваиваем цену и уровень и nameHourValue
@@ -897,6 +1030,8 @@ CardSevenElement.addEventListener('click', function() {
       
       
       // Обновляем интерфейс
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+      renderTasks();
       updateUiBtnSeven();
     } else {
       alert('Недостаточно средств на балансе!');
@@ -952,6 +1087,15 @@ CardEightElement.addEventListener('click', function() {
 
       counter -= cardEightPrice;
 
+      currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            progressData[index] += cardEightPrice;
+            if (progressData[index] >= task.target) {
+                giveReward(index);
+            }
+        }
+      });
+
       infoEarnHour = currentEHour + HourEightValue;
   
       // Удваиваем цену и уровень и nameHourValue
@@ -963,6 +1107,8 @@ CardEightElement.addEventListener('click', function() {
       
       
       // Обновляем интерфейс
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+      renderTasks();
       updateUiBtnEight();
     } else {
       alert('Недостаточно средств на балансе!');
@@ -1101,6 +1247,15 @@ OneBtnM.addEventListener('click', function() {
 
       counter -= PriceOBtnM;
 
+      currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            progressData[index] += PriceOBtnM;
+            if (progressData[index] >= task.target) {
+                giveReward(index);
+            }
+        }
+      });
+
       infoEarnHour = currentEHour + HourOBtnM;
   
       // Удваиваем цену и уровень и nameHourValue
@@ -1112,6 +1267,8 @@ OneBtnM.addEventListener('click', function() {
       
       
       // Обновляем интерфейс
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+      renderTasks();
       updateOneBtnM();
     } else {
       alert('Недостаточно средств на балансе!');
@@ -1164,6 +1321,15 @@ twoBtnM.addEventListener('click', function() {
 
       counter -= PriceTBtnM;
 
+      currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            progressData[index] += PriceTBtnM;
+            if (progressData[index] >= task.target) {
+                giveReward(index);
+            }
+        }
+      });
+
       infoEarnHour = currentEHour + HourTBtnM;
   
       // Удваиваем цену и уровень и nameHourValue
@@ -1175,6 +1341,9 @@ twoBtnM.addEventListener('click', function() {
       
       
       // Обновляем интерфейс
+      
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+      renderTasks();
       updateOneBtnM();
     } else {
       alert('Недостаточно средств на балансе!');
@@ -1227,6 +1396,15 @@ threeBtnM.addEventListener('click', function() {
 
       counter -= PriceThreBtnM;
 
+      currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            progressData[index] += PriceThreBtnM;
+            if (progressData[index] >= task.target) {
+                giveReward(index);
+            }
+        }
+      });
+
       infoEarnHour = currentEHour + HourThreBtnM;
   
       // Удваиваем цену и уровень и nameHourValue
@@ -1238,6 +1416,8 @@ threeBtnM.addEventListener('click', function() {
       
       
       // Обновляем интерфейс
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+      renderTasks();
       updateThreeBtnM();
     } else {
       alert('Недостаточно средств на балансе!');
@@ -1290,6 +1470,15 @@ fourBtnM.addEventListener('click', function() {
 
       counter -= PriceFBtnM;
 
+      currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            progressData[index] += PriceFBtnM;
+            if (progressData[index] >= task.target) {
+                giveReward(index);
+            }
+        }
+      });
+
       infoEarnHour = currentEHour + HourFBtnM;
   
       // Удваиваем цену и уровень и nameHourValue
@@ -1301,6 +1490,8 @@ fourBtnM.addEventListener('click', function() {
       
       
       // Обновляем интерфейс
+      localStorage.setItem('progressData', JSON.stringify(progressData));
+      renderTasks();
       updateFourBtnM();
     } else {
       alert('Недостаточно средств на балансе!');
@@ -1385,7 +1576,7 @@ function sendDeviceInfo(deviceInfo) {
     .catch((error) => console.error('Error:', error));
 }
 
-window.onload = getUserDeviceInfo; */
+window.onload = getUserDeviceInfo;*/
 
 
 
@@ -1394,10 +1585,12 @@ window.onload = function() {
     const closeButton = document.getElementById('close-btn');
 
     // Проверка в localStorage, был ли пользователь ранее
-    if (!localStorage.getItem('welcomeShown')) {
+    /* if (!localStorage.getItem('welcomeShown')) {
         // Показываем приветственный экран, если он еще не был показан
         welcomeScreen.classList.add('show');
-    }
+    } */
+
+    welcomeScreen.classList.add('show');
 
     // Закрытие экрана по кнопке
     closeButton.onclick = function() {
@@ -1419,5 +1612,210 @@ document.querySelectorAll('.moving-cabbage').forEach(cabbage => {
     cabbage.style.animation = `moveAndRotate ${2 + Math.random() * 10}s linear infinite`;
 });
 
+const btnTasks = document.querySelector('.btn-item.btn-tasks');
+const taskContent = document.querySelector('.tasks-wrapper');
+
+btnTasks.addEventListener('click', function() {
+    taskContent.classList.toggle('open-task');
+});
+
+// Daily challenges
+
+let currentTasks = [];
+let progressData = []; // Прогресс для текущих заданий
+let clicks = 0; // Количество кликов
+
+
+const tasksData = [
+    { description: "Сделай 1к кликов", target: 1000, reward: 5000 },
+    { description: "Потрать 1к монет", target: 1000, reward: 5000 },
+    { description: "Накопи 1к монет", target: 1000, reward: 5000 },
+    { description: "Сделай 2к кликов", target: 2000, reward: 6000 },
+    { description: "Потрать 2к монет", target: 2000, reward: 6000 },
+    { description: "Накопи 2к монет", target: 2000, reward: 6000 },
+    { description: "Сделай 5к кликов", target: 5000, reward: 10000 },
+    { description: "Потрать 5к монет", target: 5000, reward: 10000 },
+    { description: "Накопи 5к монет", target: 5000, reward: 10000 },
+];
+
+const tasksWrapper = document.querySelector(".tasks-content");
+
+
+// Случайный выбор заданий
+function getRandomTasks(count) {
+    const shuffledTasks = [...tasksData].sort(() => Math.random() - 0.5);
+    return shuffledTasks.slice(0, count);
+}
+
+// Рендер заданий
+function renderTasks() {
+    tasksWrapper.innerHTML = `<p class="tasks-p">Ежедневные испытания</p>`;
+    currentTasks.forEach((task, index) => {
+        const taskHTML = `
+            <div class="item-list">
+                <div class="task-item ${progressData[index] >= task.target ? "rewarded" : ""}" data-index="${index}">
+                    <div class="wrapper-des">
+                        <p>${task.description}</p>
+                    </div>
+                    <div class="wrapper-aim">
+                        <p class="text-aim">
+                            <span>${progressData[index]}</span>/<span>${task.target}</span>
+                        </p>
+                    </div>
+                    <div class="wrapper-gift">
+                        <p>Награда</p>
+                        <div class="gift-item">
+                            <p class="result-gift">${task.reward}</p>
+                            <img class="dollar-limit" src="icons/dollar-icon1.png" alt="dollar-icon">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        tasksWrapper.innerHTML += taskHTML;
+    });
+}
+
+// Обновление прогресса заданий
+function updateTasksProgress() {
+    const rewardedTasks = JSON.parse(localStorage.getItem("rewardedTasks")) || [];
+
+    currentTasks.forEach((task, index) => {
+        // Обновляем прогресс для текущих заданий
+        if (task.description.includes("кликов")) {
+            progressData[index] = Math.min(clicks, task.target); // Ограничиваем прогресс до цели
+        } else if (task.description.includes("Накопи")) {
+            progressData[index] = Math.min(counter, task.target); // Ограничиваем прогресс до цели
+        }
+
+        // Если задание выполнено и ещё не помечено как "выдано"
+        if (progressData[index] >= task.target && !rewardedTasks.includes(index)) {
+            giveReward(index); // Выдаём награду
+        }
+    });
+
+    // Сохраняем обновлённый прогресс
+    localStorage.setItem("progressData", JSON.stringify(progressData));
+    renderTasks(); // Обновляем интерфейс
+}
+
+
+
+function giveReward(index) {
+    const rewardedTasks = JSON.parse(localStorage.getItem("rewardedTasks")) || [];
+
+    // Проверяем, если награда уже выдана
+    if (rewardedTasks.includes(index)) return;
+
+    // Выдаём награду
+    counter += currentTasks[index].reward;
+    titleCounter.textContent = counter;
+
+    // Помечаем задание как выполненное
+    progressData[index] = currentTasks[index].target; // Устанавливаем прогресс на максимум
+    rewardedTasks.push(index); // Добавляем задание в список выполненных
+    localStorage.setItem("rewardedTasks", JSON.stringify(rewardedTasks));
+
+    const taskItem = document.querySelector(`.task-item[data-index="${index}"]`);
+    taskItem.classList.add("rewarded"); // Добавляем класс rewarded
+
+    // Дублируем элемент для всплытия
+    const popup = taskItem.cloneNode(true); // Копируем элемент
+    popup.classList.add("rewarded-popup"); // Добавляем класс для всплытия
+    document.body.appendChild(popup); // Добавляем во временное место
+
+    // Показываем элемент с анимацией сверху вниз
+    setTimeout(() => {
+        popup.classList.add("show"); // Анимация появления
+    }, 10);
+
+    // Убираем элемент через 3 секунды
+    setTimeout(() => {
+        popup.classList.remove("show"); // Убираем анимацию
+        setTimeout(() => popup.remove(), 500); // Удаляем элемент после завершения анимации
+    }, 3000);
+
+    // Сохраняем обновлённый баланс
+    localStorage.setItem("counter", counter);
+}
+
+
+
+
+
+// Обновление заданий
+function updateTasks() {
+    const now = Date.now();
+    const lastUpdate = parseInt(localStorage.getItem("lastTasksUpdate")) || 0;
+
+    if (now - lastUpdate >= 24 * 60 * 60 * 1000) {
+        // Сбрасываем задания каждый день
+        currentTasks = getRandomTasks(3);
+        progressData = Array(currentTasks.length).fill(0);
+        localStorage.setItem("currentTasks", JSON.stringify(currentTasks));
+        localStorage.setItem("progressData", JSON.stringify(progressData));
+        localStorage.setItem("lastTasksUpdate", now);
+
+        // Сбрасываем выданные награды
+        localStorage.setItem("rewardedTasks", JSON.stringify([]));
+    } else {
+        // Восстанавливаем сохранённые задания
+        currentTasks = JSON.parse(localStorage.getItem("currentTasks")) || getRandomTasks(3);
+        progressData = JSON.parse(localStorage.getItem("progressData")) || Array(currentTasks.length).fill(0);
+    }
+
+    renderTasks(); // Перерисовываем задания
+}
+
+
+
+// Обработка кликов
+function registerClick() {
+    clicks++;
+    updateTasksProgress();
+}
+
+// Обработка трат
+function spendCoins(amount) {
+    if (counter < amount) {
+        alert("Недостаточно монет!");
+        return;
+    }
+
+    counter -= amount;
+    document.querySelector(".titleCounter").textContent = counter;
+
+    currentTasks.forEach((task, index) => {
+        if (task.description.includes("Потрать")) {
+            // Ограничиваем прогресс до максимума
+            const remaining = task.target - progressData[index];
+            const increment = Math.min(remaining, amount); // Берём только нужное для завершения
+            progressData[index] += increment;
+
+            if (progressData[index] >= task.target) {
+                giveReward(index); // Выдаём награду
+            }
+        }
+    });
+
+    localStorage.setItem("progressData", JSON.stringify(progressData));
+    renderTasks();
+}
+
+const resultGift = document.querySelector('.result-gift');
+//const missionTarget = document.querySelector('.text-aim');
+
+//${task.reward} ${task.target}
+
+//priceText.innerHTML = `${formatNumber(buttonCost)}`;
+
+resultGift.innerHTML = `${formatNumber(task.reward)}`;
+
+
+// Инициализация
+
+updateTasks();
+renderTasks();
+updateTasksProgress();
 
 //localStorage.clear();

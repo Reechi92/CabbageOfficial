@@ -912,6 +912,165 @@ h1 {
   background-color: #45a049;
 }
 
+.tasks-wrapper {
+  z-index: 10;
+  display: none;
+  width: 440px;
+  height: 705px;
+  background-color: #56628A;
+  position: absolute;
+  top: 39px;
+  left: 744px;
+  border-radius: 28px;
+  padding: 14px;
+  text-align: center;
+  color: #fff;
+  transition: all 0.6s ease;
+}
+
+.open-task {
+  display: block;
+  transition: all 0.6s ease;
+}
+
+.tasks-p {
+  font-size: 21px;
+}
+
+.item-list {
+  width: 100%;
+  height: auto;
+  margin-top: 13px;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.gift-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.task-item {
+  background-color: #4c5ea8;
+  width: 100%;
+  height: 65px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+}
+
+.tasks-content {
+  margin: 0 auto;
+  background-color: #8490c3;
+  padding: 8px;
+  width: 100%;
+  height: 93%;
+  margin-top: 6px;
+  border-radius: 18px;
+  overflow: auto;
+}
+
+/* Выполненное задание */
+.wrapper-kapusta {
+  padding: 45px 43px 28px 28px;
+}
+
+.task-item.rewarded {
+  padding-right: 38px;
+  background-color: #28a745; /* Зелёный фон для выполненного задания */
+  color: #ffffff; /* Белый текст */
+  border: 2px solid #218838; /* Тёмно-зелёная граница */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Галочка внутри выполненного задания */
+.task-item.rewarded::after {
+  content: "✔"; /* Галочка */
+  font-size: 24px;
+  color: white;
+  font-weight: bold;
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Анимация появления задания */
+@keyframes completeTask {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.task-item.rewarded {
+  animation: completeTask 0.5s ease-in-out;
+}
+
+.task-item.rewarded-popup {
+  width: 396px;
+  height: 65px;
+  position: fixed;
+  top: -20%; /* Начальная позиция за пределами экрана */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background-color: #4caf50;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  opacity: 0; /* Скрыт по умолчанию */
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.task-item.rewarded-popup.show {
+  top: 10%; /* Позиция в центре экрана */
+  opacity: 1; /* Плавное появление */
+  transform: translateX(-50%);
+}
+
+/* Галочка */
+.check-icon {
+  display: none; /* По умолчанию скрыта */
+  width: 24px;
+  height: 24px;
+  background: url("icons/check-icon.svg") no-repeat center;
+  background-size: contain;
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+}
+
+/* Плавное появление галочки */
+.task-item.completed .check-icon {
+  display: block;
+  animation: pop 0.3s ease-out;
+}
+
+/* Анимация для галочки */
+@keyframes pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+/* ------------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------- */
 /* Анимация для движения и вращения */
 @keyframes moveAndRotate {
   0% {
@@ -1016,6 +1175,12 @@ h1 {
   }
 }
 @media screen and (max-width: 1440px) {
+  .tasks-wrapper {
+    width: 402px;
+    height: 640px;
+    top: 18px;
+    left: 520px;
+  }
   .left-panel {
     width: 450px;
     height: 700px;
@@ -1073,6 +1238,9 @@ h1 {
   }
 }
 @media screen and (max-width: 1024px) {
+  .tasks-wrapper {
+    left: 311px;
+  }
   .counter-btn {
     width: 267px;
     max-height: 279px;
@@ -1153,6 +1321,9 @@ h1 {
   }
 }
 @media screen and (max-width: 768px) {
+  .tasks-wrapper {
+    left: 185px;
+  }
   .counter-btn {
     width: 267px;
     max-height: 279px;
@@ -1171,13 +1342,13 @@ h1 {
     height: 38px;
   }
   .open-lp {
-    left: 201px;
+    left: 232px;
   }
   .icon-upgrade img {
     width: 30px;
   }
   .left-panel {
-    width: 366px;
+    width: 305px;
     height: 450px;
   }
   .icon-revenue img {
@@ -1233,6 +1404,10 @@ h1 {
   }
 }
 @media screen and (max-width: 425px) {
+  .tasks-wrapper {
+    width: 100%;
+    left: 0;
+  }
   .counter-btn {
     width: 267px;
     max-height: 279px;
@@ -1411,6 +1586,9 @@ h1 {
   }
 }
 @media screen and (max-width: 320px) {
+  .item-list {
+    font-size: 14px;
+  }
   .progress-bar {
     width: 100%;
   }
